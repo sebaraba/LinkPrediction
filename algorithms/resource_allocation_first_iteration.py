@@ -42,6 +42,13 @@ print(allCommon)
 # Compute the resource allocation index for the Gtemp Graph
 allocation = nx.resource_allocation_index(Gtemp, allCommon)
 
+
+# Sort the allocatio indexes in ascending order.
+def takeThird(elem):
+    return elem[2]
+allocation = sorted(allocation, key = takeThird, reverse = True)
+
+# Print allocation indexes
 for entry in allocation:
     u, v, p = entry
     print('Node pair: [', u,']','[', v,'] -> ', 'Index = ' , p)
