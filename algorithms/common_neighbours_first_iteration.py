@@ -26,18 +26,14 @@ G = bipartite.projected_graph(Gtemp, bottom_nodes)
 
 allCommon = []
 
-print(len(nodes2))
 
 # Define tuples of nodes1 to feed Common Neighbors Algorithm
 for i in range(0, len(nodes1) - 1):
     firstNode = nodes1[i];
-    print('First -->', firstNode)
     for j in range(i+1, len(nodes1)):
         secondNode = nodes1[j];
-        print('Second ->>',secondNode)
         allCommon.append((firstNode, secondNode))
 
-print(allCommon)
 
 # Define Lables for the nodes
 # This is a feature that helps more on the algorithms testing part.
