@@ -74,7 +74,15 @@ for entry in commonNeighbours:
 
 
 # Compute node degree for common items of the common neighbors:
-print(Gtemp.degree(buyers[0]))
+itemsDegree = Gtemp.degree(items))
+
+for entry in itemsDegree:
+    item, degree = entry
+    for nodes in comm
+    node1, node2 = nodes
+    if (node1, item) in edges:
+        print(true)
+
 
 degreeList = []
 
