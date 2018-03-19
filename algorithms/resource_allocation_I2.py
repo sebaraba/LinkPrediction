@@ -17,7 +17,7 @@ with open('../data/test_csv.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     next(readCSV, None)
     for row in readCSV:
-        if row[1] != '' and row[2] != '':
+        if row[1] != '' and row[2] != '' and row[1] != ' ' and row[2] != ' ':
             buyers.append(row[6])
             items.append(row[1])
 
