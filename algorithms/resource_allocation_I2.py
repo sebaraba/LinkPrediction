@@ -70,6 +70,14 @@ allocation = [al for al in allocation if al[2] > 1]
 predictions = []
 
 
+# for entry in allocation:
+#     v, u, p = entry
+#     print("node1, node2, probability", v, u, p)
+#     input()
+#
+#
+# print(len(allocation))
+
 
 # We find all items that bouth buyers have bought
 # We search for items that one node bougth but the other did not
