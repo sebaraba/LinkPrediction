@@ -106,7 +106,7 @@ for entry in bestCommonNeighbors:
 
 
 
-print(predictionsList)
+print(set(predictionsList))
 
 
 
