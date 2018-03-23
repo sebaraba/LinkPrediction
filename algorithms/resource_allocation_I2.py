@@ -60,12 +60,13 @@ def takeThird(elem):
 
 
 allocation = sorted(allocation, key = takeThird, reverse = True)
-allocation = [al for al in allocation if al[2] > 1]
+allocation = [al for al in allocation if al[2] > 1.5]
+allocation = set(allocation)
 
-# Print allocation indexes
-# for entry in allocation:
-#     u, v, p = entry
-#     print('Node pair: [', u,']','[', v,'] -> ', 'Index = ' , p)
+#Print allocation indexes
+for entry in allocation:
+    u, v, p = entry
+    print('Node pair: [', u,']','[', v,'] -> ', 'Index = ' , p)
 
 predictions = []
 
@@ -106,8 +107,13 @@ for entry in allocation:
 
     if buyer1Candidate[1] > buyer2Candidate[1]:
         predictions.append((buyer1, buyer1Candidate[0]))
+        print((buyer1, buyer1Candidate[0]))
+        input()
     else:
         predictions.append((buyer2, buyer2Candidate[0]))
+        print((buyer2, buyer2Candidate[0]))
+        input()
+
 
 
 
