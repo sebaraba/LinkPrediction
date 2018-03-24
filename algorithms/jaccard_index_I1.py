@@ -65,15 +65,18 @@ bestJaccardCandidates = []
 
 jaccardCoeff = nx.jaccard_coefficient(Gtemp, testJaccardIndex)
 for entry in jaccardCoeff:
-    if entry[2] > 0.1:
+    if entry[2] > 0.12:
+        # print(entry)
+        # input()
         bestJaccardCandidates.append(entry)
+print(len(bestJaccardCandidates))
+
 
 # Compute node degree for different items of the common neighbors:
 
 # for entry in bestJaccardCandidates:
 #     print(entry)
 
-print(len(bestJaccardCandidates))
 
 
 items1 = []
@@ -86,7 +89,7 @@ predictionsList = []
 # We find items that both common neighbors have bought
 # We search for items that one node bougth but the other did not
 # Then we compute the degree of those item nodes
-# Finally we get the item with max degree and predict it to the other user 
+# Finally we get the item with max degree and predict it to the other user
 for entry in bestJaccardCandidates:
     buyer1, buyer2, res_aloc = entry
 
@@ -98,19 +101,24 @@ for entry in bestJaccardCandidates:
     # input()
 
     items1 = [edge for edge in buyer1Edges if edge not in buyer2Edges]
-    items2 = [edge for edge in buyer2Edges if edge not in buyer2Edges]
+    items2 = [edge for edge in buyer2Edges if edge not in buyer1Edges]
 
+    print(items1, 'items1, items2', items2)
     if items1 != []:
         itemsBuyer1Degree = Gtemp.degree(items1)
         buyer1Candidate = max(itemsBuyer1Degree, key = lambda itemsBuyer1Degree:itemsBuyer1Degree[1])
+        print("Buyer 1 candidate:",  buyer1Candidate)
     else:
         buyer1Candidate = ('', 0)
     if items2 != []:
         itemsBuyer2Degree = Gtemp.degree(items2)
-        buyer2Candidate = max(itemsBuyer2Degree, key = lambda itemsBuyer1Degree:itemsBuyer2Degree[1])
+        buyer2Candidate = max(itemsBuyer2Degree, key = lambda itemsBuyer2Degree:itemsBuyer2Degree[1])
+        print("Buyer 2 candidate:",  buyer2Candidate)
+
     else:
         buyer2Candidate = ('', 0)
 
+    input()
 
     if buyer1Candidate[1] > buyer2Candidate[1]:
         predictionsList.append((buyer1, buyer1Candidate[0]))
