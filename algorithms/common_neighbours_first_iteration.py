@@ -29,9 +29,9 @@ allCommon = []
 
 # Define tuples of nodes1 to feed Common Neighbors Algorithm
 for i in range(0, len(nodes1) - 1):
-    firstNode = nodes1[i];
+    firstNode = nodes1[i]
     for j in range(i+1, len(nodes1)):
-        secondNode = nodes1[j];
+        secondNode = nodes1[j]
         allCommon.append((firstNode, secondNode))
 
 
