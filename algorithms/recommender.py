@@ -4,43 +4,81 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 
+
+# The following class comprises a recommender system that uses 
+# similarity based link prediction algorithms to find the recommended items. 
+# Running instructions:
+# The command takes three arguments: 
+#       1. The dataset: sroted_evetns.csv, data.csv. test_csv.csv;
+#       2. The algorithm: common_neighbours, resource_allocation, jaccard_coefficient;
+#       3. The threshold: variable depending on the algorithm;
+# An example a call of the recommender system: 
+# python recommender.py data.csv common_neighbours 600
 class Recommender(object):
 
-    #Contructor of the class;
-    def __init__(self, dataset):
+    # The constructor initialises the state variables with the given values for: dataset, algorithm and threshold.
+    # The functionCalls method calls all other needed functions in order to obtain the predictions with respects 
+    # to the given arguments.
+    def __init__(self, dataset, algorithm, threshold):
+        print('Entered constructor:')
+        self.algorithm = algorithm
+        self.threshold = threshold
         self.dataset = dataset
+
         self.networkG = nx.Graph()        
         self.buyers = []
         self.items = []
         self.edges = []
         self.pairs = []
         self.weights = {}
+        self.functinCalls()
 
-        print('Entered constructor:')
-        self.loadDatasets(self.dataset)
+    # Depending on the chosen algorithm and dataset, 
+    # this method computes the predictions based on different link prediction approaches.
+    def functinCalls(self):
+        self.loadDatasets()
 
-    def loadDatasets(self, selectedDataset):
-        dataSetsLists = ['', 'events_sorted.csv', 'data.csv', 'test_csv.csv']
+        if self.algorithm == 'common_neighbours':
+            bestSimilarityScores = self.commonNeighborsIndex(self.pairs)
+            self.computationOnItemNodes(bestSimilarityScores)
+
+        if self.algorithm == 'resource_allocation':
+            bestSimilarityScores = self.resourceAllocationIndex(self.pairs)
+            self.computationOnItemNodes(bestSimilarityScores)
+
+        if self.algorithm == 'jaccard_coefficient':
+            bestSimilarityScores = self.jaccardCoefficientIndex(self.pairs)
+            self.computationOnItemNodes(bestSimilarityScores)
+
+
+    # This function opens the csv file containing the transaction data.
+    # The lists containing item nodes, buyer node are generated.
+    def loadDatasets(self):
+        print('Loading ' + self.dataset + ' ...')
         buyers =[]
         items =[]
-        print('Dataset:', dataSetsLists[selectedDataset])
-        # Big dataset preparation
-        with open('../data/' + dataSetsLists[selectedDataset]) as csvfile:
+
+        with open('../data/' + self.dataset) as csvfile:
             readCSV = csv.reader(csvfile, delimiter=',')
             next(readCSV, None)
             for row in readCSV:
-                if selectedDataset == 3 or selectedDataset == 2:
+                if self.dataset == 'test_csv.csv' or self.dataset == 'data.csv':
                     if row[1] != '' and row[6] != '' and row[1] != ' ' and row[6] != ' ':
                         buyers.append(row[6])
                         items.append(row[1])
-                if selectedDataset == 1:
+                if self.dataset == 'events_sorted.csv':
                     if row[1] != '' and row[3] != '' and row[1] != ' ' and row[3] != ' ':
                         buyers.append(row[1])
                         items.append(row[3])
+        print('Dataset Loaded!')
+        print('\n')
+        
         self.generateNetworkG(buyers, items)
 
 
-    #This method recieves buyers and items lists and generates the bipartite graph from it.
+    # This method recieves as parameters the lists of buyers and items.
+    # It creates the list of edges, by binding one item to one buyer as specified in the csv file. 
+    # Following it generates the bipartite graph and performs some basic analysis.
     def generateNetworkG(self, buyers, items):
         print('Generating Network, Loading ...')
         item_wieghts = {}
@@ -56,6 +94,19 @@ class Recommender(object):
         Gtemp.add_nodes_from(items, bipartite = 1)
         Gtemp.add_edges_from(edges)
 
+        temp = Gtemp.degree()
+        maximum = 0
+        summ = 0
+        count = 0
+        for el in temp:
+            if el[1] > maximum:
+                maximum = el[1]
+            summ += el[1]
+            count += 1
+
+
+        print('Average network degree:',summ/count)
+        print('Max degree:', maximum)
         # Compute degree of item nodes
         for item in items:
             item_wieghts.update({item: Gtemp.degree(item)})
@@ -68,22 +119,20 @@ class Recommender(object):
         self.edges = edges
         self.pairs = self.pairBuyerNodes(items, buyers)
 
-        #Testing Prints:
-        print('Loaded!')
+        # Basic Information
+        print('Loaded Network with the following characteristics!')
         print('Number of item nodes:', len(items))
-        print('Number of buyer nodes:', len(items))
+        print('Number of buyer nodes:', len(buyers))
         print('Number of interactions:', len(edges))
-
-        bestSimilarityScores = self.commonNeighborsIndex(self.pairs)
-        self.computationOnItemNodes(bestSimilarityScores)
-
+        print('\n')
+        
 
 
-    # The following methods creates a list of pairs of buyers;
-    # The list will be fed  intto the link prediction index algorithm;
+    # The following method creates a list of pairs of buyers;
+    # The list will be fed  into one of the link prediction index algorithms;
     def pairBuyerNodes(self, items, buyers):
         pairs = []
-
+        print('Paring Buyer nodes ...')
         # This is V2 of the algorithm; It considers for next step only buyers that have at least on common neighbour. 
         # This common neighbour is the item, whoes degree is checked. However if an item has more than a certain number of 
         # neighbours than it means it is not so relevant for finding similarities, so it is discarded;
@@ -98,38 +147,34 @@ class Recommender(object):
                             secondNode = neighbours[j]
                             pairs.append((firstNode, secondNode))
         pairs = list(set(pairs))
-                
-
-        # This is V1 of the function        
-        # Define tuples of nodes to feed Common Neighbors Algorithm
-        # for i in range(0, len(buyers)):
-        #     firstNode = buyers[i]
-        #     for j in range(i+1, len(buyers)):
-        #         if buyers[j] != buyers[i]:
-        #             secondNode = buyers[j]
-        #             pairs.append((firstNode, secondNode))
+        print('Pairs generated!')
+        print('\n')
         
-        print(len(pairs))
+        
         return(pairs)
+
 
 
     # The following part iterates over a list containing all nodes respecting the condition: |commonNeighbors| > 5
     # We find items that both common neighbors have bought
     # We search for items that one node bougth but the other did not
     # Then we compute the degree of those item nodes
-    # Finally we get the item with max degree and predict it to the other user
+    # We get the item with max degree and predict it to the other user
+    # Enventually the predictions are created buinding the similar buyers to thei best items
     def computationOnItemNodes(self, bestSimilarityScores):
         predictionsList = []
+        print('Started Computations on item nodes:')
         for entry in bestSimilarityScores:
             buyer1, buyer2, cnn = entry
-            
+            maxDegree1 = ''
+            maxDegree2 = ''
+
             buyer1Edges = self.networkG[buyer1]
             buyer2Edges = self.networkG[buyer2]
             items1 = [obj for obj in buyer1Edges if obj not in buyer2Edges]
             items2 = [obj for obj in buyer2Edges if obj not in buyer1Edges]
 
-            # print(items1)
-            # print(set(items1) == set(items2))
+
             if len(items1):
                 maxDegree1 = 0
                 for item in items1:
@@ -146,34 +191,28 @@ class Recommender(object):
                             maxDegree2 = self.weights[item]
                             maxDegreeID2 = item
             
-            predictionsList.append((buyer1, maxDegreeID1))
-            predictionsList.append((buyer2, maxDegreeID2))
-
-            # if items1 != []:
-            #     itemsBuyer1Degree = self.networkG.degree(items1)
-            #     predictionBuyer1 = max(itemsBuyer1Degree, key = lambda itemsBuyer1Degree:itemsBuyer1Degree[1])
-            # else:
-            #     predictionBuyer1 = ('', 0)
-            # if items2 != []:
-            #     itemsBuyer2Degree = self.networkG.degree(items2)
-            #     predictionBuyer2 = max(itemsBuyer2Degree, key = lambda itemsBuyer1Degree:itemsBuyer2Degree[1])
-            # else:
-            #     predictionBuyer2 = ('', 0)
-
-
-            # if predictionBuyer1[1] > predictionBuyer2[1]:
-            #     predictionsList.append((buyer1, predictionBuyer1[0]))
-            # else:
-            #     predictionsList.append((buyer2, predictionBuyer2[0]))
-
-
+            if maxDegree1 != '':
+                predictionsList.append((buyer1, maxDegreeID1))
+            if maxDegree2 != '':
+                predictionsList.append((buyer2, maxDegreeID2))
+        print('Computations Done!')
+        print('\n')
+        
+        print('Computing Predictions ...')
         predictionsList = list(set(predictionsList))
-        for entry in predictionsList:
-            print(entry)
+
+        if len(predictionsList):
+            for entry in predictionsList:
+                print('Prediction:', entry)
+        else:
+            print('\n')
+            print('Not enough data to build predictions, try chainging the threshold value.')
+
 
     # Compute Common Neighbors Algorithm for Gtemp's nodes 
     # Pick only nodes which exceed e cartain trashold for the number of CNN
     def commonNeighborsIndex(self, buyerPairs):
+        print('Computing Similarity Scors using Common Neighborus Index ...')
         bestSimilarityScores = []
         commonNeighbors = []
         for entry in buyerPairs:
@@ -182,35 +221,46 @@ class Recommender(object):
             commonNeighbors.append(entry)
 
         for entry in commonNeighbors:
-            if entry[2] > 5:
+            if entry[2] > self.threshold:
                 bestSimilarityScores.append(entry)
-
+        print('Computation Done!')
+        print('\n')
+        
         return(list(set(bestSimilarityScores)))
 
 
-    # Compute the resource allocation index for the Gtemp Graph
+
+    # Compute the resource allocation index for the selected network
+    # Return a list of nodes that exceed the threshold
     def resourceAllocationIndex(self, buyerPairs):
         # Sort the allocatio indexes in ascending order.
+        print('Computing Similarity Scors using Resource Allocation Index ...')        
         allocation = nx.resource_allocation_index(self.networkG, buyerPairs)
-        allocation = [entry for entry in allocation if entry[2] > 1.5]
+        allocation = [entry for entry in allocation if entry[2] > self.threshold]
         allocation = list(set(allocation))
 
-        #Print allocation indexes
-        for entry in allocation:
-            u, v, p = entry
-            print('Node pair: [', u,']','[', v,'] -> ', 'Index = ' , p)
+        print('Computation Done!')
+        print('\n')
+
+        return(list(set(allocation)))
 
 
-    def jaccardIndex(self, buyerPairs):
+    # Compute the jaccard index for the selected network
+    # Return a list of nodes that exceed the threshold
+    def jaccardCoefficientIndex(self, buyerPairs):
+        print('Computing Similarity Scors using Jaccard Coefficient Index ...')     
         jaccard = nx.jaccard_coefficient(self.networkG, buyerPairs)
-        jaccard = [entry for entry in jaccard if entry[2] > 0.1]
+        jaccard = [entry for entry in jaccard if entry[2] > self.threshold]
         jaccard = list(set(jaccard))
 
-        #Print jaccard indexes
-        for entry in jaccard:
-            u, v, p = entry
-            print('Node pair: [', u,']','[', v,'] -> ', 'Index = ' , p)
+        print('Computation Done!')
+        print('\n')
+
+        return(jaccard)
+        
+
+        
+
 
 if __name__ == '__main__':
-    print(str(sys.argv[1]))
-    Recommender(int(sys.argv[1]))
+    Recommender(str(sys.argv[1]), str(sys.argv[2]), float(sys.argv[3]))
