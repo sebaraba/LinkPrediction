@@ -122,7 +122,7 @@ class Recommender(object):
         # Basic Information
         print('Loaded Network with the following characteristics!')
         print('Number of item nodes:', len(items))
-        print('Number of buyer nodes:', len(items))
+        print('Number of buyer nodes:', len(buyers))
         print('Number of interactions:', len(edges))
         print('\n')
         
@@ -166,7 +166,9 @@ class Recommender(object):
         print('Started Computations on item nodes:')
         for entry in bestSimilarityScores:
             buyer1, buyer2, cnn = entry
-            
+            maxDegree1 = ''
+            maxDegree2 = ''
+
             buyer1Edges = self.networkG[buyer1]
             buyer2Edges = self.networkG[buyer2]
             items1 = [obj for obj in buyer1Edges if obj not in buyer2Edges]
@@ -189,17 +191,22 @@ class Recommender(object):
                             maxDegree2 = self.weights[item]
                             maxDegreeID2 = item
             
-            predictionsList.append((buyer1, maxDegreeID1))
-            predictionsList.append((buyer2, maxDegreeID2))
+            if maxDegree1 != '':
+                predictionsList.append((buyer1, maxDegreeID1))
+            if maxDegree2 != '':
+                predictionsList.append((buyer2, maxDegreeID2))
         print('Computations Done!')
         print('\n')
         
         print('Computing Predictions ...')
         predictionsList = list(set(predictionsList))
 
-        for entry in predictionsList:
-            print('Prediction:', entry)
-
+        if len(predictionsList):
+            for entry in predictionsList:
+                print('Prediction:', entry)
+        else:
+            print('\n')
+            print('Not enough data to build predictions, try chainging the threshold value.')
 
 
     # Compute Common Neighbors Algorithm for Gtemp's nodes 
