@@ -21,17 +21,17 @@ class Recommender(object):
     # to the given arguments.
     def __init__(self, dataset, algorithm, threshold):
         print('Entered constructor:')
+        self.dataset = dataset        
         self.algorithm = algorithm
         self.threshold = threshold
-        self.dataset = dataset
 
         self.networkG = nx.Graph()        
         self.buyers = []
         self.items = []
         self.edges = []
         self.pairs = []
+        self.predictions = []        
         self.weights = {}
-        self.functinCalls()
 
     # Depending on the chosen algorithm and dataset, 
     # this method computes the predictions based on different link prediction approaches.
@@ -62,7 +62,7 @@ class Recommender(object):
             readCSV = csv.reader(csvfile, delimiter=',')
             next(readCSV, None)
             for row in readCSV:
-                if self.dataset == 'test_csv.csv' or self.dataset == 'data.csv':
+                if self.dataset == 'test_csv.csv' or self.dataset == 'data.csv' or self.dataset == 'trainingDataset1.csv':
                     if row[1] != '' and row[6] != '' and row[1] != ' ' and row[6] != ' ':
                         buyers.append(row[6])
                         items.append(row[1])
@@ -105,7 +105,6 @@ class Recommender(object):
             count += 1
 
 
-        print('Average network degree:',summ/count)
         print('Max degree:', maximum)
         # Compute degree of item nodes
         for item in items:
@@ -202,6 +201,7 @@ class Recommender(object):
         predictionsList = list(set(predictionsList))
 
         if len(predictionsList):
+            self.predictions = predictionsList
             for entry in predictionsList:
                 print('Prediction:', entry)
         else:
@@ -259,8 +259,19 @@ class Recommender(object):
         return(jaccard)
         
 
-        
+    def getPreditions(self):
+        self.functinCalls()        
+        return(self.predictions)
 
 
-if __name__ == '__main__':
-    Recommender(str(sys.argv[1]), str(sys.argv[2]), float(sys.argv[3]))
+# if __name__ == '__main__':
+#     Recommender(str(sys.argv[1]), str(sys.argv[2]), float(sys.argv[3]))
+
+
+class resultsVisualisation():
+    rec = Recommender('trainingDataset1.csv', 'common_neighbours', 300)
+    predictionsList = rec.getPreditions()
+
+    for entry in predictionsList:
+        print(entry)
+
