@@ -73,8 +73,8 @@ with open('../data/data.csv') as csvfile:
             readCSV = csv.reader(csvfile, delimiter=',') 
             next(readCSV, None)
             
-            trainingDataset1 = csv.writer(csvfile1, delimiter=' ')
-            testDataset1 = csv.writer(csvfile2, delimiter=' ')
+            trainingDataset1 = csv.writer(csvfile1, delimiter=',')
+            testDataset1 = csv.writer(csvfile2, delimiter=',')
             
             for row in readCSV:
                 count += 1
@@ -91,10 +91,12 @@ with open('../data/data.csv') as csvfile:
 print('Dataset Loaded!')
 print('\n')
 
+
+
 # print(count)
 # count = 0
 
-# with open('../data/data.csv') as csvfile:
+# with open('../data/trainingDataset.csv') as csvfile:
 #     reader = csv.reader(csvfile, delimiter=' ')
 #     with open('../data/trainingDataset1.csv', 'w+') as csvfile1:
 #         writerTraining = csv.writer(csvfile1)
