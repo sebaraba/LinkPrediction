@@ -202,8 +202,7 @@ class Recommender(object):
 
         if len(predictionsList):
             self.predictions = predictionsList
-            for entry in predictionsList:
-                print('Prediction:', entry)
+            print('Predictions generated')
         else:
             print('\n')
             print('Not enough data to build predictions, try chainging the threshold value.')
@@ -269,9 +268,47 @@ class Recommender(object):
 
 
 class resultsVisualisation():
-    rec = Recommender('trainingDataset1.csv', 'common_neighbours', 300)
-    predictionsList = rec.getPreditions()
+    buyers =[]
+    items = []
+    edges = []
+    with open('../data/testDataset1.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        next(readCSV, None)
+        for row in readCSV:
+            if row[1] != '' and row[6] != '' and row[1] != ' ' and row[6] != ' ':
+                buyers.append(row[6])
+                items.append(row[1])
 
-    for entry in predictionsList:
-        print(entry)
 
+    edges = zip(buyers, items)
+    buyers = list(set(buyers))
+    items = list(set(items))        
+    print('Buyer\'s list size', len(buyers))
+    print('Items\'s list size',  len(items))
+    print('Edge\'s list size',  len(edges))
+
+    for i in range(200, 300, 20):
+        rec = Recommender('trainingDataset1.csv', 'common_neighbours', i)
+        predictionsList = rec.getPreditions()
+
+        countTotal = 0
+        countBad = 0
+        countGood = 0
+
+        for item in predictionsList:
+            countTotal += 1
+            if item in edges:
+                countGood += 1
+            else:
+                countBad += 1
+
+        print(countTotal, 'Total')
+        print(countBad, 'Bad')
+        print(countGood, 'Good')
+        print((countGood/countTotal * 100), 'Percentage')
+        print('\n')
+
+
+    
+
+    
