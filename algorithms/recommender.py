@@ -62,11 +62,11 @@ class Recommender(object):
             readCSV = csv.reader(csvfile, delimiter=',')
             next(readCSV, None)
             for row in readCSV:
-                if self.dataset == 'test_csv.csv' or self.dataset == 'data.csv':
+                if self.dataset == 'trainingDataset1.csv':
                     if row[1] != '' and row[6] != '' and row[1] != ' ' and row[6] != ' ':
                         buyers.append(row[6])
                         items.append(row[1])
-                if self.dataset == 'events_sorted.csv':
+                if self.dataset == 'trainingDataset2.csv':
                     if row[1] != '' and row[3] != '' and row[1] != ' ' and row[3] != ' ':
                         buyers.append(row[1])
                         items.append(row[3])
@@ -105,7 +105,7 @@ class Recommender(object):
             count += 1
 
 
-        print('Average network degree:',summ/count)
+        # print('Average network degree:',summ/count)
         print('Max degree:', maximum)
         # Compute degree of item nodes
         for item in items:
